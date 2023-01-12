@@ -14,7 +14,7 @@ NPLT_notes = [n for n in FilteredElementCollector(doc).OfClass(TextNote) if "NPL
 views = {}
 
 for n in NPLT_notes:
-    if n.OwnerViewId.ToString() not in views:
+    if n.OwnerViewId.IntegerValue not in views:
         views[n.OwnerViewId.IntegerValue] = List[ElementId]([n.Id])
     else:
         views[n.OwnerViewId.IntegerValue].Add(n.Id)
