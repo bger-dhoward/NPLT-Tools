@@ -5,6 +5,7 @@ __author__ = "D. Howard, Ballinger"
 from Autodesk.Revit.DB import *
 from System.Collections.Generic import List, IList
 from pyrevit import revit, DB
+from pyrevit import forms
 
 doc = __revit__.ActiveUIDocument.Document
 
@@ -21,7 +22,7 @@ for n in NPLT_notes:
 num_notes = len(NPLT_notes)
 num_views = len(views)
 
-transaction_description = "Hide {n} NPLT notes in {v} views".format(n = num_notes, v = num_views)
+transaction_description = "{n} NPLT notes hidden in {v} views".format(n = num_notes, v = num_views)
 
 t = Transaction(doc, transaction_description)
 t.Start()
@@ -31,3 +32,9 @@ for view_id, note_list in views.items():
     view.HideElements(note_list)
 
 t.Commit()
+
+forms.alert(transaction_description, 
+    sub_msg="This may include notes already hidden. Use `Unhide NPLT Text` to show hidden elements", 
+    title="Hide NPLT Notes",
+    ok=True,
+    footer='Ballinger pyRevit Tools')
