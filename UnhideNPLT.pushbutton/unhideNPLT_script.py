@@ -43,17 +43,25 @@ description =   "NPLT elements unhidden in {v} views:\n" \
                             "    Lines: {num_lines}\n" \
                             "    Dims:  {num_dims}".format(num_notes = num_notes, v = num_views, num_lines=num_lines, num_dims=num_dims)
 
-t = Transaction(doc, "Unhide NPLT Elements")
-t.Start()
+if num_views > 0:
+    t = Transaction(doc, "Unhide NPLT Elements")
+    t.Start()
 
-for view_id, elem_list in views.items():
-    view = doc.GetElement(ElementId(view_id))
-    view.UnhideElements(elem_list)
+    for view_id, elem_list in views.items():
+        view = doc.GetElement(ElementId(view_id))
+        view.UnhideElements(elem_list)
 
-t.Commit()
+    t.Commit()
+    
+    
+    forms.alert(description, 
+        sub_msg="This may include elements not already hidden. Use `Unhide NPLT` to show hidden elements", 
+        title="Unhide NPLT Elements",
+        ok=True,
+        footer='Ballinger pyRevit Tools')
 
-forms.alert(description, 
-    sub_msg="This may include elements not already hidden. Use `Unhide NPLT` to show hidden elements", 
-    title="Unhide NPLT Elements",
-    ok=True,
-    footer='Ballinger pyRevit Tools')
+else:
+    forms.alert("No Hideable NPLT elements found.", 
+        title="Unhide NPLT Elements",
+        ok=True,
+        footer='Ballinger pyRevit Tools')
