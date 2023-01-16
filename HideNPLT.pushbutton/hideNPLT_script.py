@@ -1,4 +1,4 @@
-__title__ = "Hide\n NPLT Elements"
+__title__ = "Hide NPLT\nElements"
 __doc__ = "Hide all NPLT Text, Detail Lines, and Dimensions in the active project"
 __author__ = "D. Howard, Ballinger"
 

@@ -1,4 +1,4 @@
-__title__ = "Unhide\n NPLT Elements"
+__title__ = "Unhide NPLT\nElements"
 __doc__ = "Unhide all NPLT Text, Detail Lines, and Dimensions in the active project"
 __author__ = "D. Howard, Ballinger"
 
