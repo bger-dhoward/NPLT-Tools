@@ -9,9 +9,9 @@ from pyrevit import forms
 
 doc = __revit__.ActiveUIDocument.Document
 
-NPLT_notes = [n for n in FilteredElementCollector(doc).OfClass(TextNote) if "NPLT" in n.Name]
-NPLT_lines = [e for e in FilteredElementCollector(doc).OfClass(CurveElement) if type(e) == DetailLine and "NPLT" in e.LineStyle.Name]
-NPLT_dims = [d for d in FilteredElementCollector(doc).OfClass(Dimension) if d.Category.Name == "Dimensions" and "NPLT" in d.Name]
+NPLT_notes = [n for n in FilteredElementCollector(doc).OfClass(TextNote) if "NPLT" in n.Name and n.ViewSpecific]
+NPLT_lines = [e for e in FilteredElementCollector(doc).OfClass(CurveElement) if type(e) == DetailLine and "NPLT" in e.LineStyle.Name and e.ViewSpecific]
+NPLT_dims = [d for d in FilteredElementCollector(doc).OfClass(Dimension) if d.Category.Name == "Dimensions" and "NPLT" in d.Name and d.ViewSpecific]
 
 views = {}
 
@@ -38,24 +38,40 @@ num_lines = len(NPLT_lines)
 num_dims = len(NPLT_dims)
 num_views = len(views)
 
-description =   "NPLT elements unhidden in {v} views:\n" \
+description =   "NPLT elements in {v} views:\n" \
                             "    Notes: {num_notes}\n" \
                             "    Lines: {num_lines}\n" \
                             "    Dims:  {num_dims}".format(num_notes = num_notes, v = num_views, num_lines=num_lines, num_dims=num_dims)
+
+owned_by_others = []
 
 if num_views > 0:
     t = Transaction(doc, "Unhide NPLT Elements")
     t.Start()
 
     for view_id, elem_list in views.items():
-        view = doc.GetElement(ElementId(view_id))
-        view.UnhideElements(elem_list)
+        if WorksharingUtils.GetCheckoutStatus(doc, ElementId(view_id)) != CheckoutStatus.OwnedByOtherUser:
+            view = doc.GetElement(ElementId(view_id))
+            view.UnhideElements(elem_list)
+        else:
+            tip = WorksharingUtils.GetWorksharingTooltipInfo(doc, ElementId(view_id))
+            owner = tip.Owner
+            viewname = doc.GetElement(ElementId(view_id)).Name
+            num_items = len(elem_list)
+            info = "{viewname}\n|  {num_items} elements \n|  owner: {owner}\n".format(viewname=viewname, num_items=num_items, owner=owner)
+            owned_by_others.append(info)
 
     t.Commit()
     
     
+    if len(owned_by_others) > 0:
+        view_alert = "\n".join(owned_by_others)
+        view_alert = "---------------------\n\nThe following views are currently checked out by another user and cannot be modified:\n\n" + view_alert
+    else:
+        view_alert = ""
+
     forms.alert(description, 
-        sub_msg="This may include elements not already hidden. Use `Unhide NPLT` to show hidden elements", 
+        sub_msg="This may include elements not already hidden.\n" + view_alert, 
         title="Unhide NPLT Elements",
         ok=True,
         footer='Ballinger pyRevit Tools')
